@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "target": "es6",
+    "lib": [
+      "ES6",
+      "DOM",
+      "ESNext"
+    ],
+    "outDir": "dist",
+    "declaration": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "Node"
+  }
+}

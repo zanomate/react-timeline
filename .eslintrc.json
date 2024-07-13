@@ -1,0 +1,30 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "extends": [
+    "eslint:recommended",
+    "airbnb-base",
+    "airbnb-typescript/base",
+    "prettier"
+  ],
+  "plugins": [
+    "@typescript-eslint",
+    "prettier"
+  ],
+  "rules": {
+    "arrow-body-style": [
+      "warn",
+      "as-needed"
+    ],
+    "class-methods-use-this": "off",
+    "max-classes-per-file": "off",
+    "no-param-reassign": "warn",
+    "no-underscore-dangle": "off",
+    "semi": "off",
+    "import/no-cycle": "off",
+    "import/prefer-default-export": "off",
+    "prettier/prettier": "error"
+  }
+}

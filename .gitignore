@@ -1,0 +1,19 @@
+#ide
+.idea
+.vscode
+.chrome
+
+# dependencies
+/node_modules
+
+# bundle
+dist
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+debug.log
+
+# misc
+.DS_Store
