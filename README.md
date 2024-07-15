@@ -2,7 +2,7 @@
 
 [![NPM version](https://img.shields.io/npm/v/@znmt/react-timeline.svg)](https://www.npmjs.com/package/@znmt/react-timeline)
 
-`react-timeline` is a React library that provides highly customizable components for developing horizontal timelines.
+`react-timeline` is a React library that provides **highly customizable** components for developing <ins>horizontal timelines</ins>.
 
 ## Features
 
@@ -12,7 +12,7 @@
 
 ## Demo
 
-Look for a **[working example](https://codesandbox.io/p/sandbox/react-timeline-fnjgdr)**
+Look for an **[example](https://codesandbox.io/p/sandbox/react-timeline-fnjgdr)**
 
 ## Installation
 
@@ -135,9 +135,9 @@ A component that allows rendering different contents in the timeline at regular 
 An object to manipulate the timeline programmatically. Pass it to the `Timeline` component to control it.
 
 ```jsx
-import { TimelineController } from './TimelineController'
+import { createTimelineController } from '@znmt/react-timeline'
 
-const controller = new TimelineController()
+const controller = createTimelineController()
 
 const MyComp = () => {
   return (
@@ -176,6 +176,29 @@ Adjust the zoom level and the scroll position of the timeline to fit the specifi
 |---------------|----------|----------|------------------------------------------------------------------------------------------------------------|
 | `from`        | `string` | Yes      | The start time of the range to fit. It accepts various ISO 8601 formats. See [Time formats](#time-formats) |
 | `to`          | `string` | Yes      | The end time of the range to fit. It accepts various ISO 8601 formats. See [Time formats](#time-formats)   |
+
+### React to timeline changes
+
+You can react to timeline changes by using a series of custom hooks provided by the controller.
+
+```jsx
+import { useTimelineState } from '@znmt/react-timeline'
+
+const MyComp = () => {
+  const zoom = controller.useZoom()
+  const scroll = controller.useScroll()
+  
+  return (
+    <>
+      <Timeline start="00:00" end="23:59" controller={controller}>
+        {/* ... */}
+      </Timeline>
+      <span>Zoom level: {zoom}</span>
+      <span>Current scroll: {scroll}</span>
+    </>
+  )
+}
+```
 
 ---
 

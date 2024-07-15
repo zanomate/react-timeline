@@ -1,9 +1,9 @@
 import { Provider, useAtomValue } from 'jotai'
 import { DetailedHTMLProps, HTMLAttributes, MutableRefObject, ReactNode, useEffect, useRef } from 'react'
 import { getTimestamp } from '../helpers/time'
-import { useTimelineWidth } from '../helpers/useTimelineWidth'
-import { configAtom, containerAtom, scrollLeftAtom, zoomAtom } from '../store/store'
-import { TimelineController } from '../store/TimelineController'
+import { useInternalTimelineWidth } from '../helpers/useInternalTimelineWidth'
+import { configAtom, containerAtom, scrollAtom } from '../store/store'
+import { getDefaultTimelineController, TimelineController } from '../store/TimelineController'
 
 interface OuterContainerProps {
   onRefSet: (ref: MutableRefObject<HTMLDivElement>) => void
@@ -14,21 +14,21 @@ const OuterContainer = (props: OuterContainerProps) => {
   const { onRefSet, children } = props
 
   const containerRef = useRef<HTMLDivElement>(null)
-
-  const zoom = useAtomValue(zoomAtom)
-  const scrollLeft = useAtomValue(scrollLeftAtom)
+  const scrollLeft = useAtomValue(scrollAtom)
 
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollLeft = scrollLeft
     }
-  }, [zoom])
+  }, [scrollLeft])
 
   return (
     <div
       ref={(ref) => {
-        containerRef.current = ref
-        onRefSet(containerRef)
+        if (!containerRef.current) {
+          containerRef.current = ref
+          onRefSet(containerRef)
+        }
       }}
       style={{ width: '100%', height: '100%', overflowX: 'scroll' }}
     >
@@ -44,7 +44,7 @@ interface InnerContainerProps {
 const InnerContainer = (props: InnerContainerProps) => {
   const { children } = props
 
-  const width = useTimelineWidth()
+  const width = useInternalTimelineWidth()
 
   return (
     <div
@@ -70,7 +70,7 @@ export interface TimelineProps extends DetailedHTMLProps<HTMLAttributes<HTMLDivE
 }
 
 export const Timeline = (props: TimelineProps) => {
-  const { controller = new TimelineController(), start, end, paddingX = 0, children, ...otherProps } = props
+  const { controller = getDefaultTimelineController(), start, end, paddingX = 0, children, ...otherProps } = props
 
   useEffect(() => {
     controller.__store.set(configAtom, { start: getTimestamp(start), end: getTimestamp(end), paddingX })
@@ -82,7 +82,7 @@ export const Timeline = (props: TimelineProps) => {
         <OuterContainer
           onRefSet={(ref) => {
             controller.__store.set(containerAtom, ref)
-            controller.__store.set(scrollLeftAtom, 0)
+            controller.__store.set(scrollAtom, 0)
           }}
         >
           <InnerContainer>{children}</InnerContainer>

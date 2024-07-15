@@ -1,68 +1,95 @@
-import { createStore } from 'jotai'
+import { Atom, createStore, getDefaultStore } from 'jotai'
+import { useAtomValue } from 'jotai/index'
 import moment from 'moment-timezone'
 import { getTimestamp } from '../helpers/time'
-import { configAtom, containerAtom, scrollLeftAtom, zoomAtom } from './store'
+import { configAtom, containerAtom, scrollAtom, zoomAtom } from './store'
 
-export class TimelineController {
+export interface TimelineStateConfig<Value> {
+  store: ReturnType<typeof createStore>
+  atom: Atom<Value>
+}
+
+class TimelineControllerImplementation {
   __store: ReturnType<typeof createStore>
 
-  constructor() {
-    this.__store = createStore()
+  constructor(store: ReturnType<typeof createStore>) {
+    this.__store = store
   }
 
-  get containerWidth(): number {
-    return this.__store.get(containerAtom)?.current?.clientWidth || 0
-  }
+  // atom getters
 
-  get containerScrollLeft(): number {
-    return this.__store.get(containerAtom)?.current?.scrollLeft || 0
-  }
-
-  get timelineWidth(): number {
-    const padding = this.__store.get(configAtom).paddingX * 2
-    return (this.containerWidth - padding) * this.zoom + padding
-  }
-
-  get config() {
+  private get __config() {
     return this.__store.get(configAtom)
   }
 
-  get zoom(): number {
+  private get __container() {
+    return this.__store.get(containerAtom).current
+  }
+
+  private get __scroll() {
+    return this.__store.get(scrollAtom)
+  }
+
+  private get __zoom() {
     return this.__store.get(zoomAtom)
   }
 
-  __zoomByFactor(factor: number) {
-    const padding = this.config.paddingX * 2
+  // utils
 
-    const scrollFactor = this.containerScrollLeft / this.timelineWidth
-    const visibleFactor = this.containerWidth / this.timelineWidth
-
-    const newTimelineWidth = (this.containerWidth - padding) * factor + padding
-    const newVisibleSize = newTimelineWidth * visibleFactor
-
-    const newScroll = scrollFactor * newTimelineWidth + (newVisibleSize - this.containerWidth) / 2
-
-    this.__store.set(zoomAtom, factor)
-    this.__store.set(scrollLeftAtom, newScroll)
+  private get __containerWidth() {
+    return this.__container.clientWidth || 0 // TODO: check null
   }
 
+  private get __containerScrollLeft() {
+    return this.__container.scrollLeft || 0 // TODO: check null
+  }
+
+  private get __timelineWidth() {
+    const padding = this.__config.paddingX * 2
+    return (this.__containerWidth - padding) * this.__zoom + padding
+  }
+
+  private ___zoomByFactor(factor: number) {
+    const containerWidth = this.__containerWidth
+    const containerScrollLeft = this.__containerScrollLeft
+    const timelineWidth = this.__timelineWidth
+
+    const padding = this.__config.paddingX * 2
+
+    const scrollFactor = containerScrollLeft / timelineWidth
+    const visibleFactor = containerWidth / timelineWidth
+
+    const newTimelineWidth = (containerWidth - padding) * factor + padding
+    const newVisibleSize = newTimelineWidth * visibleFactor
+
+    const newScroll = scrollFactor * newTimelineWidth + (newVisibleSize - containerWidth) / 2
+
+    this.__store.set(zoomAtom, factor)
+    this.__store.set(scrollAtom, newScroll)
+  }
+
+  // public methods
+
   zoomIn(factor: number = 0.5) {
-    this.__zoomByFactor(this.zoom * (1 + factor))
+    this.___zoomByFactor(this.__zoom * (1 + factor))
   }
 
   zoomOut(factor: number = 0.5) {
-    this.__zoomByFactor(Math.max(1, this.zoom / (1 + factor)))
+    this.___zoomByFactor(Math.max(1, this.__zoom / (1 + factor)))
   }
 
-  fit(from: string, to: string) {
+  fitTimeRange(from: string, to: string) {
+    const config = this.__config
+    const containerWidth = this.__containerWidth
+
     const fromTs = getTimestamp(from)
     const toTs = getTimestamp(to)
 
-    const padding = this.config.paddingX * 2
-    const spaceToFit = this.containerWidth - padding
+    const padding = config.paddingX * 2
+    const spaceToFit = containerWidth - padding
 
-    const totalDuration = moment(this.config.end).diff(this.config.start)
-    const durationFromStart = moment(fromTs).diff(this.config.start)
+    const totalDuration = moment(config.end).diff(config.start)
+    const durationFromStart = moment(fromTs).diff(config.start)
     const duration = moment(toTs).diff(fromTs)
 
     const newSpace = spaceToFit * (totalDuration / duration)
@@ -70,6 +97,26 @@ export class TimelineController {
     const newScroll = newSpace * (durationFromStart / totalDuration)
 
     this.__store.set(zoomAtom, newZoom)
-    this.__store.set(scrollLeftAtom, Math.max(0, newScroll))
+    this.__store.set(scrollAtom, Math.max(0, newScroll))
+  }
+
+  // hooks
+
+  useConfig() {
+    return useAtomValue(configAtom, { store: this.__store })
+  }
+
+  useZoom() {
+    return useAtomValue(zoomAtom, { store: this.__store })
+  }
+
+  useScroll() {
+    return useAtomValue(scrollAtom, { store: this.__store })
   }
 }
+
+export type TimelineController = InstanceType<typeof TimelineControllerImplementation>
+
+export const createTimelineController = () => new TimelineControllerImplementation(createStore())
+
+export const getDefaultTimelineController = () => new TimelineControllerImplementation(getDefaultStore())

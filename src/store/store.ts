@@ -13,5 +13,5 @@ export const configAtom = atom<TimelineConfig>({
   paddingX: 0,
 })
 export const containerAtom = atom<MutableRefObject<HTMLDivElement>>({ current: null })
-export const scrollLeftAtom = atom<number>(0)
+export const scrollAtom = atom<number>(0)
 export const zoomAtom = atom<number>(1)
