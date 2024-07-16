@@ -182,7 +182,9 @@ Adjust the zoom level and the scroll position of the timeline to fit the specifi
 You can react to timeline changes by using a series of custom hooks provided by the controller.
 
 ```jsx
-import { useTimelineState } from '@znmt/react-timeline'
+import { createTimelineController } from '@znmt/react-timeline'
+
+const controller = createTimelineController()
 
 const MyComp = () => {
   const zoom = controller.useZoom()
