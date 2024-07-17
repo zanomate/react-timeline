@@ -4,6 +4,12 @@
 
 `react-timeline` is a React library that provides **highly customizable** components for developing <ins>horizontal timelines</ins>.
 
+![example1](https://i.ibb.co/w4QK4Kx/timeline.png)
+
+![example2](https://i.ibb.co/LSHkH0L/timeline2.png)
+
+![example3](https://i.ibb.co/0Xzc5Qb/timeline3.png)
+
 ## Features
 
 - Completely customizable
